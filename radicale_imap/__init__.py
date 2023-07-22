@@ -87,7 +87,7 @@ class Auth(BaseAuth):
             supports_plain = 'AUTH=PLAIN' in capabilities
 
             try:
-                if scram_mechs:
+                if False and scram_mechs:
                     mech = scram_mechs[0]
                     logger.info(f"Trying SASL with {mech}")
                     connection.sasl_login(scram_mechs[0], ScrampAuthMech(login, password, [mech]))
