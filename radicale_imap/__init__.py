@@ -65,7 +65,7 @@ class ScrampAuthMech():
             self._step += 1
             self._client.set_server_first(challenge)
             return self._client.get_client_final()
-        self._client._set_server_final(challenge)
+        self._client.set_server_final(challenge)
         
 
 class Auth(BaseAuth):
