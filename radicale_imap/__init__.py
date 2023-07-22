@@ -78,7 +78,7 @@ class Auth(BaseAuth):
             connection = imapclient.IMAPClient(host, port, ssl=(security == "tls"))
             if security == "starttls":
                 connection.starttls()
-            capabilities = imapclient.capabilities()
+            capabilities = connection.capabilities()
             scram_mechs = [item.split('=')[1] for item in capabilities if item.startswith('AUTH=') and 'SCRAM' in item]
             supports_plain = 'AUTH=PLAIN' in capabilities
 
