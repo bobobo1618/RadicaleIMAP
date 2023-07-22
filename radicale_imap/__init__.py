@@ -79,15 +79,20 @@ class Auth(BaseAuth):
             if security == "starttls":
                 connection.starttls()
             capabilities = [c.decode() for c in connection.capabilities()]
+            logger.info(f"Server has the following capabilities: {capabilities.join(', ')})")
             scram_mechs = [item.split('=')[1] for item in capabilities if item.startswith('AUTH=') and 'SCRAM' in item]
             supports_plain = 'AUTH=PLAIN' in capabilities
 
             try:
                 if scram_mechs:
-                    connection.sasl_login(scram_mechs[0], ScrampAuthMech(login, password, scram_mechs[0:1]))
+                    mech = scram_mechs[0]
+                    logger.info(f"Trying SASL with {mech}")
+                    connection.sasl_login(scram_mechs[0], ScrampAuthMech(login, password, ))
                 elif supports_plain:
+                    logger.info(f"Trying AUTH PLAIN")
                     connection.plain_login(login, password)
                 else:
+                    logger.info(f"Trying LOGIN")
                     connection.login(login, password)
             except Exception as e:
                         logger.debug(
