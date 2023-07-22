@@ -51,7 +51,7 @@ PLUGIN_CONFIG_SCHEMA = {"auth": {
 
 class ScrampAuthMech():
     def __init__(self, username, password, mechanisms):
-        self._client = ScrampClient(mechanisms, username, password)
+        self._client = ScramClient(mechanisms, username, password)
         self._step = 0
     
     def __call__(self, challenge):
