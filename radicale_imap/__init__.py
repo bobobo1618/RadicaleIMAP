@@ -55,6 +55,9 @@ class ScrampAuthMech():
         self._step = 0
     
     def __call__(self, challenge):
+        logger.info(f"Auth step {self._step}, challenge: {repr(challenge)}")
+        if type(challenge) is str:
+            challenge = challenge.encode('utf-8')
         if self._step == 0:
             self._step += 1
             return self._client.get_client_first()
