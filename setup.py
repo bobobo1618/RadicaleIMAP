@@ -14,4 +14,4 @@ setup(
     license="GNU GPL v3",
     platforms="Any",
     packages=["radicale_imap"],
-    install_requires=["radicale>=3.0.0"])
+    install_requires=["radicale>=3.0.0", "imapclient>=2.3.1", "scramp>=1.4.4"])

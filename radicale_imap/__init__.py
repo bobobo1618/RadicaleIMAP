@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import imaplib
+import imapclient
 import ssl
 import string
 
 from radicale.auth import BaseAuth
 from radicale.log import logger
-
+from scramp import ScrampClient
 
 def imap_address(value):
     if "]" in value:
@@ -49,6 +49,21 @@ PLUGIN_CONFIG_SCHEMA = {"auth": {
     "imap_host": {"value": "", "type": imap_address},
     "imap_security": {"value": "tls", "type": imap_security}}}
 
+class ScrampAuthMech():
+    def __init__(self, username, password, mechanisms):
+        self._client = ScrampClient(mechanisms, username, password)
+        self._step = 0
+    
+    def __call__(self, challenge):
+        if self._step == 0:
+            self._step += 1
+            return self._client.get_client_first()
+        if self._step == 1:
+            self._step += 1
+            self._client.set_server_first(challenge)
+            return self._client.get_client_final()
+        self._client._set_server_final(challenge)
+        
 
 class Auth(BaseAuth):
     """Authenticate user with IMAP."""
@@ -60,22 +75,25 @@ class Auth(BaseAuth):
         host, port = self.configuration.get("auth", "imap_host")
         security = self.configuration.get("auth", "imap_security")
         try:
-            if security == "tls":
-                port = 993 if port is None else port
-                connection = imaplib.IMAP4_SSL(
-                    host=host, port=port,
-                    ssl_context=ssl.create_default_context())
-            else:
-                port = 143 if port is None else port
-                connection = imaplib.IMAP4(host=host, port=port)
-                if security == "starttls":
-                    connection.starttls(ssl.create_default_context())
+            connection = imapclient.IMAPClient(host, port, ssl=(security == "tls"))
+            if security == "starttls":
+                connection.starttls()
+            capabilities = imapclient.capabilities()
+            scram_mechs = [item.split('=')[1] for item in capabilities if item.startswith('AUTH=') and 'SCRAM' in item]
+            supports_plain = 'AUTH=PLAIN' in capabilities
+
             try:
-                connection.login(login, password)
+                if scram_mechs:
+                    connection.sasl_login(scram_mechs[0], ScrampAuthMech(login, password, scram_mechs[0:1]))
+                elif supports_plain:
+                    connection.plain_login(login, password)
+                else:
+                    connection.login(login, password)
             except imaplib.IMAP4.error as e:
-                logger.debug(
-                    "IMAP authentication failed: %s", e, exc_info=True)
-                return ""
+                        logger.debug(
+                            "IMAP authentication failed: %s", e, exc_info=True)
+                        return ""
+
             connection.logout()
             return login
         except (OSError, imaplib.IMAP4.error) as e:
