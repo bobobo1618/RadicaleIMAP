@@ -87,7 +87,7 @@ class Auth(BaseAuth):
                 if scram_mechs:
                     mech = scram_mechs[0]
                     logger.info(f"Trying SASL with {mech}")
-                    connection.sasl_login(scram_mechs[0], ScrampAuthMech(login, password, ))
+                    connection.sasl_login(scram_mechs[0], ScrampAuthMech(login, password, [mech]))
                 elif supports_plain:
                     logger.info(f"Trying AUTH PLAIN")
                     connection.plain_login(login, password)
