@@ -89,13 +89,13 @@ class Auth(BaseAuth):
                     connection.plain_login(login, password)
                 else:
                     connection.login(login, password)
-            except imaplib.IMAP4.error as e:
+            except Exception as e:
                         logger.debug(
                             "IMAP authentication failed: %s", e, exc_info=True)
                         return ""
 
             connection.logout()
             return login
-        except (OSError, imaplib.IMAP4.error) as e:
+        except Exception as e:
             raise RuntimeError("Failed to communicate with IMAP server %r: "
                                "%s" % ("[%s]:%d" % (host, port), e)) from e
