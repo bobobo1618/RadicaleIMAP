@@ -20,7 +20,7 @@ import string
 
 from radicale.auth import BaseAuth
 from radicale.log import logger
-from scramp import ScrampClient
+from scramp import ScramClient
 
 def imap_address(value):
     if "]" in value:
